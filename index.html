@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        text-align: center;
+      }
+      button {
+        margin-top: 40vh;
+        height: 10vw;
+        width: 30vw;
+      }
+    </style>
+    <script src="http://res2.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <button>调用微信扫一扫</button>
+  </body>
+  <script>
+    const button = document.getElementsByTagName("button")[0];
+    button.onclick = () => {
+      axios
+        .get("http://zzhou998.top:3003/wx-api-info", {
+          params: {
+            url: location.href,
+            acode: "zhouzhihuprivatetest",
+          },
+        })
+        .then((res) => {
+          const data = res.data.data;
+          wx.config({
+            debug: true,
+            // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: data.appId,
+            // 必填，公众号的唯一标识
+            timestamp: data.timestamp,
+            // 必填，生成签名的时间戳
+            nonceStr: data.nonceStr,
+            // 必填，生成签名的随机串
+            signature: data.signature,
+            // 必填，签名，见附录1
+            jsApiList: [
+              "scanQRCode", // 微信扫一扫接口
+              "getLocation", // 获取位置信息
+            ], // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+          });
+          wx.error(function (res) {
+            // Toast("微信签名验证失败返回的信息:" + JSON.stringify(res));
+            alert("微信签名验证失败：" + JSON.stringify(res));
+          });
+          wx.ready(function () {
+            alert("wx配置完成");
+            wx.scanQRCode({
+              needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+              scanType: ["qrCode", "barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+              success: function (res) {
+                // 扫描成功得到的信息
+                alert("扫描成功信息为：" + JSON.stringify(res));
+              },
+              fail: function (res) {
+                alert("扫描失败信息为：" + JSON.stringify(res));
+              },
+            });
+          });
+        })
+        .catch((error) => {
+          alert(error);
+        });
+    };
+  </script>
+</html>
